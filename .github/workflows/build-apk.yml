@@ -38,6 +38,12 @@ jobs:
           channel: ${{ steps.fvm-config.outputs.FLUTTER_CHANNEL }}
           cache: true
 
+      - name: Install Invoke
+        run: pip install invoke
+
+      - name: Generate translations
+        run: invoke translate
+
       - name: Install dependencies
         run: flutter pub get
 
