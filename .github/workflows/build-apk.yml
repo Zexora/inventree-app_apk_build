@@ -51,7 +51,7 @@ jobs:
           "InvenTree-${{ steps.version.outputs.version }}-debug.apk"
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: InvenTree-${{ steps.version.outputs.version }}
           path: InvenTree-${{ steps.version.outputs.version }}-debug.apk
