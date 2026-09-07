@@ -1,0 +1,64 @@
+name: Build InvenTree APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Get app version
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building InvenTree version: $VERSION"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Read Flutter version
+        uses: kuhnroyal/flutter-fvm-config-action@v2
+        id: fvm-config
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
+          channel: ${{ steps.fvm-config.outputs.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --debug
+
+      - name: Rename APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-debug.apk \
+          "InvenTree-${{ steps.version.outputs.version }}-debug.apk"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InvenTree-${{ steps.version.outputs.version }}
+          path: InvenTree-${{ steps.version.outputs.version }}-debug.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-${{ steps.version.outputs.version }}
+          name: InvenTree ${{ steps.version.outputs.version }}
+          files: InvenTree-${{ steps.version.outputs.version }}-debug.apk
+          generate_release_notes: true
