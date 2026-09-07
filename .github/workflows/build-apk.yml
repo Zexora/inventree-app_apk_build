@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get app version
         id: version
@@ -22,20 +22,15 @@ jobs:
           echo "Building InvenTree version: $VERSION"
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Read Flutter version
-        uses: kuhnroyal/flutter-fvm-config-action@v2
-        id: fvm-config
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ steps.fvm-config.outputs.FLUTTER_VERSION }}
-          channel: ${{ steps.fvm-config.outputs.FLUTTER_CHANNEL }}
+          flutter-version-file: .fvmrc
           cache: true
 
       - name: Install Invoke
@@ -56,13 +51,13 @@ jobs:
           "InvenTree-${{ steps.version.outputs.version }}-debug.apk"
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: InvenTree-${{ steps.version.outputs.version }}
           path: InvenTree-${{ steps.version.outputs.version }}-debug.apk
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: app-${{ steps.version.outputs.version }}
           name: InvenTree ${{ steps.version.outputs.version }}
